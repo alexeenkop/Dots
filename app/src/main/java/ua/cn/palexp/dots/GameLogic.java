@@ -1,6 +1,7 @@
 package ua.cn.palexp.dots;
 
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * Created by pALEXp on 22.05.2015.
@@ -13,6 +14,9 @@ public class GameLogic {
     private final int COUNT_OF_PLAYERS, BOARD_WIDTH, BOARD_HEIGHT;
     private int currentPlayer=0;
     private Dots[][] dots = null;
+    private Dots [] cepochka = null;
+    private boolean volnakray;
+    private boolean fin;
     private boolean isLock=false;
 
     public GameLogic(GameView view, GameActivity activity) {
@@ -62,7 +66,7 @@ public class GameLogic {
 
         dots[cellX][cellY].free = false;
 
-        view.drawDots(cellX,cellY,colors[currentPlayer]);
+        view.drawDots(cellX, cellY, colors[currentPlayer]);
 
         if (currentPlayer == 2) {
             currentPlayer = 0;
@@ -72,13 +76,57 @@ public class GameLogic {
 
         lightP(currentPlayer);
 
-        isZamk(cellX,cellY);
+        volnakray = false;
+        fin = false;
+        volna(cellX, cellY, currentPlayer, 0);
+        if (fin) {
+            Toast.makeText(activity,"okr",Toast.LENGTH_SHORT).show();
+        }
 
     }
 
-    public boolean isZamk (int x, int y){
+    public void volna (int x, int y, int player, int wave){
 
-        return  true;
+        if (fin) {
+            return;
+        }
+
+        if (x<0 || x>=BOARD_WIDTH || y<0 || y>=BOARD_HEIGHT) {
+            volnakray = true;
+            return;
+        } else {
+            volnakray = false;
+        }
+
+        if (volnakray) {
+            return;
+        }
+
+        if (wave == 0) {
+            cepochka[wave].x = x;
+            cepochka[wave].y = y;
+        } else {
+            if (dots[x][y].player == currentPlayer && cepochka[wave - 1].x != x && cepochka[wave - 1].y != y) {
+                cepochka[wave].x = x;
+                cepochka[wave].y = y;
+                if (cepochka[wave].x == cepochka[0].x && cepochka[wave].y == cepochka[0].y) {
+                    fin = true;
+                    return;
+                }
+            } else {
+                return;
+            }
+        }
+
+        volna(x-1,y,player,wave+1);
+        volna(x-1,y-1,player,wave+1);
+        volna(x,y-1,player,wave+1);
+        volna(x+1,y-1,player,wave+1);
+        volna(x+1,y,player,wave+1);
+        volna(x+1,y+1,player,wave+1);
+        volna(x,y+1,player,wave+1);
+        volna(x-1,y+1,player,wave+1);
+
     }
 
 }

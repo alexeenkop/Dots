@@ -19,6 +19,14 @@ public class Dots {
         this.player = player;
     }
 
+    public Dots (int x,int y){
+        this.x = x;
+        this.y = y;
+        this.free = false;
+        this.zah = false;
+        this.player = -1;
+    }
+
     public int getX() {
         return x;
     }

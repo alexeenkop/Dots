@@ -1,0 +1,68 @@
+<TableLayout  xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:paddingLeft="@dimen/abc_action_bar_default_padding_material"
+    android:paddingRight="@dimen/abc_action_bar_default_padding_material"
+    android:paddingTop="@dimen/abc_action_bar_default_padding_material"
+    android:paddingBottom="@dimen/abc_action_bar_default_padding_material"
+    tools:context="ua.cn.palexp.dots.GameActivity"
+    android:background="@android:color/darker_gray">
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="Player1"
+            android:textColor="#ff0000"
+            android:id="@+id/textView"
+            android:layout_column="0" />
+    </TableRow>
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="Player2"
+            android:textColor="#00ff00"
+            android:id="@+id/textView2"
+            android:layout_column="0" />
+    </TableRow>
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="Player3"
+            android:textColor="#0000ff"
+            android:id="@+id/textView3"
+            android:layout_column="0" />
+    </TableRow>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp">
+
+        <ua.cn.palexp.dots.GameView
+        android:layout_width="310dp"
+        android:layout_height="420dp"
+        android:id="@+id/game_view"
+        android:background="@color/primary_text_default_material_dark"/>
+
+    </LinearLayout>
+
+</TableLayout >

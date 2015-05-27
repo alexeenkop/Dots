@@ -32,7 +32,15 @@ public class GameLogic {
                 dots[x][y] = new Dots(x,y,true,false,-1);
             }
         }
+        initCep();
         lightP(currentPlayer);
+    }
+
+    private void initCep() {
+        cepochka = new Dots[150];
+        for (int x1=0; x1<150; x1++){
+            cepochka[x1] = new Dots(-1,-1);
+        }
     }
 
     public void lightP (int currentPlayer) {
@@ -65,8 +73,18 @@ public class GameLogic {
         }
 
         dots[cellX][cellY].free = false;
+        dots[cellX][cellY].player = currentPlayer;
 
         view.drawDots(cellX, cellY, colors[currentPlayer]);
+
+        initCep();
+        volnakray = false;
+        fin = false;
+        volna(cellX, cellY, currentPlayer, 0);
+        if (fin) {
+            Toast.makeText(activity,"okr",Toast.LENGTH_SHORT).show();
+        }
+        
 
         if (currentPlayer == 2) {
             currentPlayer = 0;
@@ -75,13 +93,6 @@ public class GameLogic {
         }
 
         lightP(currentPlayer);
-
-        volnakray = false;
-        fin = false;
-        volna(cellX, cellY, currentPlayer, 0);
-        if (fin) {
-            Toast.makeText(activity,"okr",Toast.LENGTH_SHORT).show();
-        }
 
     }
 
@@ -103,16 +114,21 @@ public class GameLogic {
         }
 
         if (wave == 0) {
-            cepochka[wave].x = x;
-            cepochka[wave].y = y;
+            cepochka[wave] = new Dots(x,y);
         } else {
-            if (dots[x][y].player == currentPlayer && cepochka[wave - 1].x != x && cepochka[wave - 1].y != y) {
-                cepochka[wave].x = x;
-                cepochka[wave].y = y;
-                if (cepochka[wave].x == cepochka[0].x && cepochka[wave].y == cepochka[0].y) {
-                    fin = true;
-                    return;
+            if (dots[x][y].player == currentPlayer && !dots[x][y].isZah()) {
+                if (wave>3) {
+                    cepochka[wave] = new Dots(x, y);
+                    if (cepochka[wave].x == cepochka[0].x && cepochka[wave].y == cepochka[0].y) {
+                        fin = true;
+                        return;
+                    }
                 }
+                for (int i=0; i<wave; i++){
+                    if (cepochka[i].x != x || cepochka[i].y != y) { //cepochka[wave - 1].x != x && cepochka[wave - 1].y != y
+                    } else return;
+                }
+                cepochka[wave] = new Dots(x, y);
             } else {
                 return;
             }

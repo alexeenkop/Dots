@@ -1,5 +1,7 @@
 package ua.cn.palexp.dots;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -13,11 +15,13 @@ public class GameLogic {
     private final int[] colors={0xffff0000, 0xff00ff00, 0xff0000ff};//цвета точек
     private final int COUNT_OF_PLAYERS, BOARD_WIDTH, BOARD_HEIGHT;
     private int currentPlayer=0;
+    private int[] zDots = null;
     private Dots[][] dots = null;
-    private Dots [] cepochka = null;
+    private Dots[] cepochka = null;
     private boolean volnakray;
     private boolean fin;
     private boolean isLock=false;
+    private int gWave=0;
 
     public GameLogic(GameView view, GameActivity activity) {
         this.view = view;
@@ -32,6 +36,7 @@ public class GameLogic {
                 dots[x][y] = new Dots(x,y,true,false,-1);
             }
         }
+        zDots = new int[COUNT_OF_PLAYERS+1];
         initCep();
         lightP(currentPlayer);
     }
@@ -52,16 +57,25 @@ public class GameLogic {
         t2=(TextView)activity.findViewById(R.id.textView3);
         if (currentPlayer == 0) {
             t.setPadding(20,0,0,0);
+            t.setText("Player1\t" + zDots[0]);
             t1.setPadding(0,0,0,0);
+            t1.setText("Player2\t" + zDots[1]);
             t2.setPadding(0,0,0,0);
+            t2.setText("Player3\t" + zDots[2]);
         } else if (currentPlayer == 1) {
             t.setPadding(0,0,0,0);
+            t.setText("Player1\t" + zDots[0]);
             t1.setPadding(20,0,0,0);
+            t1.setText("Player2\t" + zDots[1]);
             t2.setPadding(0,0,0,0);
+            t2.setText("Player3\t" + zDots[2]);
         } else if (currentPlayer == 2) {
             t.setPadding(0,0,0,0);
+            t.setText("Player1\t" + zDots[0]);
             t1.setPadding(0,0,0,0);
+            t1.setText("Player2\t" + zDots[1]);
             t2.setPadding(20,0,0,0);
+            t2.setText("Player3\t" + zDots[2]);
         } else return;
     }
 
@@ -80,11 +94,19 @@ public class GameLogic {
         initCep();
         volnakray = false;
         fin = false;
-        volna(cellX, cellY, currentPlayer, 0);
+        volna(cellX, cellY, 0);
         if (fin) {
+            //zahvDots();
+            int[] masX = new int[gWave];
+            int[] masY = new int[gWave];
+            for (int i=0; i<gWave; i++) {
+                masX[i] = cepochka[i].x;
+                masY[i] = cepochka[i].y;
+            }
+            view.drawKontur(masX,masY,gWave,colors[currentPlayer]);
             Toast.makeText(activity,"okr",Toast.LENGTH_SHORT).show();
         }
-        
+
 
         if (currentPlayer == 2) {
             currentPlayer = 0;
@@ -94,9 +116,56 @@ public class GameLogic {
 
         lightP(currentPlayer);
 
+        if (isEndGame()) {
+            int max = 0;
+            int pl = -1;
+            for (int j=0;j<zDots.length;j++){
+                if (zDots[j]>max){
+                    max = zDots[j];
+                    pl = j;
+                }
+            }
+            endGame(pl);
+        }
+
     }
 
-    public void volna (int x, int y, int player, int wave){
+    private void endGame(int pl) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setTitle("Игра оконченна!")
+                .setMessage("Выиграл игрок "+pl+"\nЗахватил: "+zDots[pl]+"точек")
+                .setCancelable(false)
+                .setNegativeButton("ОК",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
+
+    private boolean isEndGame() {
+        for(int x=0; x<BOARD_WIDTH; x++){
+            for(int y=0; y<BOARD_HEIGHT; y++){
+                if (dots[x][y].free){
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+//    private void zahvDots(int x, int y) {
+//        if (x<0 || x>=BOARD_WIDTH || y<0 || y>=BOARD_HEIGHT) {
+//            volnakray = true;
+//            return;
+//        } else {
+//            volnakray = false;
+//        }
+//    }
+
+    public void volna (int x, int y, int wave){
 
         if (fin) {
             return;
@@ -120,6 +189,7 @@ public class GameLogic {
                 if (wave>3) {
                     cepochka[wave] = new Dots(x, y);
                     if (cepochka[wave].x == cepochka[0].x && cepochka[wave].y == cepochka[0].y) {
+                        gWave = wave;
                         fin = true;
                         return;
                     }
@@ -134,14 +204,14 @@ public class GameLogic {
             }
         }
 
-        volna(x-1,y,player,wave+1);
-        volna(x-1,y-1,player,wave+1);
-        volna(x,y-1,player,wave+1);
-        volna(x+1,y-1,player,wave+1);
-        volna(x+1,y,player,wave+1);
-        volna(x+1,y+1,player,wave+1);
-        volna(x,y+1,player,wave+1);
-        volna(x-1,y+1,player,wave+1);
+        volna(x-1,y,wave+1);
+        volna(x-1,y-1,wave+1);
+        volna(x,y-1,wave+1);
+        volna(x+1,y-1,wave+1);
+        volna(x+1,y,wave+1);
+        volna(x+1,y+1,wave+1);
+        volna(x,y+1,wave+1);
+        volna(x-1,y+1,wave+1);
 
     }
 

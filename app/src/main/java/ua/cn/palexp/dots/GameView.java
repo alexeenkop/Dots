@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -26,7 +27,7 @@ public class GameView extends View {
     private float canvasSizeH, canvasSizeW;
     private Bitmap mBitmap;
     private Canvas mCanvas;
-    private Paint mBitmapPaint, paint;
+    private Paint mBitmapPaint, paint, paint1;
     private float mScaleFactor;
     private GameLogic logic;
     private GameActivity activity;
@@ -57,6 +58,13 @@ public class GameView extends View {
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeJoin(Paint.Join.ROUND);
         paint.setStrokeCap(Paint.Cap.ROUND);
+
+        paint1 =new Paint();
+        paint1.setAntiAlias(true);
+        paint1.setDither(true);
+        paint1.setColor(0xff000000);
+        paint1.setStrokeWidth(1f);
+        paint1.setStyle(Paint.Style.FILL);
 
         //рисуем сетку
         for(int x=0;x< horizontalCountOfCells +1;x++)
@@ -110,6 +118,28 @@ public class GameView extends View {
         paint.setColor(color);
         paint.setStyle(Paint.Style.FILL);
         mCanvas.drawCircle(x0, y0, 3, paint);
+        invalidate();//перерисовываем канвас
+    }
+
+    void drawKontur(int[] x, int[] y, int cnt, int color) {
+        float[] x0 = new float[cnt];
+        float[] y0 = new float[cnt];
+        for (int i=0; i<cnt; i++){
+            x0[i] = ((1f/(horizontalCountOfCells)) * viewSizeW + (1f / (horizontalCountOfCells)) * x[i] * viewSizeW);
+            y0[i] = ((1f/(verticalCountOfCells)) * viewSizeH + (1f / (verticalCountOfCells)) * y[i] * viewSizeH);
+        }
+        paint1.setColor(color);
+        paint1.setAlpha(150);
+        paint1.setStyle(Paint.Style.FILL);
+
+        Path wallpath = new Path();
+        wallpath.reset(); // only needed when reusing this path for a new build
+        wallpath.moveTo(x0[0], y0[0]); // used for first point
+        for (int i=1; i<cnt; i++){
+            wallpath.lineTo(x0[i], y0[i]);
+        }
+        wallpath.lineTo(x0[0], y0[0]); // there is a setLastPoint action but i found it not to work as expected
+        mCanvas.drawPath(wallpath, paint1);
         invalidate();//перерисовываем канвас
     }
 

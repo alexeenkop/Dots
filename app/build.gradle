@@ -13,8 +13,8 @@ android {
     buildToolsVersion "21.1.2"
     defaultConfig {
         applicationId "ua.cn.palexp.dots"
-        minSdkVersion 15
-        targetSdkVersion 22
+        minSdkVersion 9
+        targetSdkVersion 15
         versionCode 1
         versionName "1.0"
         signingConfig signingConfigs.config

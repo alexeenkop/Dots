@@ -14,6 +14,9 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
+import android.widget.Toast;
+
+import java.io.IOException;
 
 /**
  * Created by pALEXp on 19.05.2015.
@@ -111,7 +114,7 @@ public class GameView extends View {
         return true;
     }
 
-    void drawDots(int cellX, int cellY, int color) {
+    public void drawDots(int cellX, int cellY, int color) {
         //считаем координаты центра ячейки
         float x0 = ((1f/(horizontalCountOfCells)) * viewSizeW + (1f / (horizontalCountOfCells)) * cellX * viewSizeW);
         float y0 = ((1f/(verticalCountOfCells)) * viewSizeH + (1f / (verticalCountOfCells)) * cellY * viewSizeH);
@@ -121,7 +124,7 @@ public class GameView extends View {
         invalidate();//перерисовываем канвас
     }
 
-    void drawKontur(int[] x, int[] y, int cnt, int color) {
+    public void drawKontur(int[] x, int[] y, int cnt, int color) {
         float[] x0 = new float[cnt];
         float[] y0 = new float[cnt];
         for (int i=0; i<cnt; i++){
@@ -202,8 +205,11 @@ public class GameView extends View {
             //получаем координаты ячейки, по которой тапнули
             int cellX=(int)((event.getX()+getScrollX())/mScaleFactor);
             int cellY=(int)((event.getY()+getScrollY())/mScaleFactor);
-            //Log.d("dots",logic.toString());
+            if (Global.mode){
+                makeTurn((int)((horizontalCountOfCells-1) *cellX/viewSizeW), (int)((verticalCountOfCells-1) *cellY/viewSizeH));
+            } else {
             logic.addDots((int)((horizontalCountOfCells-1) *cellX/viewSizeW), (int)((verticalCountOfCells-1) *cellY/viewSizeH));
+            }
            // drawDots((int)((horizontalCountOfCells-1) *cellX/viewSizeW), (int)((verticalCountOfCells-1) *cellY/viewSizeH), Color.RED);
             return true;
         }
@@ -221,7 +227,87 @@ public class GameView extends View {
         }
     }
 
+    private void makeTurn(int x, int y) {
+        Packet packet = new Packet(Packet.PACKET_CODES.MAKE_TURN_CMD);
+        packet.setData(new TurnCoordinate(x,y));
+        try {
+            sendToServer(packet);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void sendToServer(Packet packet) throws IOException {
+
+        if(packet != null) {
+            String srt = PacketManager.pack(packet);
+
+            //XXX Send from ClientFrame
+            System.out.println("== SEND ==");
+            System.out.println(srt);
+            System.out.println("== END ==");
+
+            byte[] buf = srt.getBytes("UTF-8");
+            Global.out.write(buf, 0, buf.length);
+        }
+    }
+
     public void setLogic(GameLogic logic) {
         this.logic = logic;
+    }
+
+    public void gameUpdateThread (){
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Global.stopFlag = false;
+                try {
+                    while (!Global.stopFlag) {
+                        if (Global.in.ready()){
+                            Packet packet = PacketManager.readPacketFromStream(Global.in);
+
+                            if(packet.getCode().equals(Packet.PACKET_CODES.GAME_STATE_CHANGE_CMD)) {
+                                sendToServer(Packet.getUpdatePacket());
+                            } else if(packet.getCode().equals(Packet.PACKET_CODES.CURRENT_STATE_CODE)) {
+                                GameState gs = (GameState) packet.getData();
+                                Global.ggs = gs;
+                                for (int i=0;i<25;i++){
+                                    for (int j=0;j<35;i++){
+                                        if (gs.map.getCell(i,j).owner >= 4 && gs.map.getCell(i,j).owner <=7){
+                                            logic.dots[i][j].zah = true;
+                                            logic.dots[i][j].free = false;
+                                        }
+                                    }
+                                }for (int i=0;i<25;i++){
+                                    for (int j=0;j<35;i++){
+                                        if (gs.map.getCell(i,j).status != logic.dots[i][j].free){
+                                            logic.addDots(i,j);
+                                        }
+                                    }
+                                }
+                            } else if(packet.getCode().equals(Packet.PACKET_CODES.SUCCESS_CODE)) {
+                                //Toast.makeText(this,"Success",Toast.LENGTH_SHORT);
+                                System.out.println("Success");
+
+                            } else if(packet.getCode().equals(Packet.PACKET_CODES.INCORRECT_TURN_CODE)) {
+                                //gamePanel.setMessage("Incorrect turn.");
+                                System.out.println("Incorrect turn.");
+                            } else {
+                                //warning("Unknow request.");
+                                System.out.println("Unknow request.");
+                            }
+
+                        } else {
+                            Thread.sleep(100);
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+        });
+
+        thread.start();
     }
 }

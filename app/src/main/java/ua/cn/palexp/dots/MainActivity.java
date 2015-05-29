@@ -7,6 +7,16 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
+
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -17,31 +27,38 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
     }
 
-
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        // Inflate the menu; this adds items to the action bar if it is present.
-//        getMenuInflater().inflate(R.menu.menu_main, menu);
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        // Handle action bar item clicks here. The action bar will
-//        // automatically handle clicks on the Home/Up button, so long
-//        // as you specify a parent activity in AndroidManifest.xml.
-//        int id = item.getItemId();
-//
-//        //noinspection SimplifiableIfStatement
-//        if (id == R.id.action_settings) {
-//            return true;
-//        }
-//
-//        return super.onOptionsItemSelected(item);
-//    }
-
     public void onPlayClick (View v){
+        Global.mode = false;
         Intent intent = new Intent(this, GameActivity.class);
         startActivity(intent);
+    }
+
+    public void onPlayOnlineClick (View v){
+        //Global global = new Global();
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Global.socket =null;
+                Global.mode = true;
+                try {
+                    //InetAddress serverAddr = InetAddress.getByName("192.168.0.104");
+                    Global.socket = new Socket("192.168.43.103", 5555);
+                    Global.out = new DataOutputStream(Global.socket.getOutputStream());
+                    Global.in = new BufferedReader(new InputStreamReader(Global.socket.getInputStream(),"UTF-8"));
+                    Global.is = Global.socket.getInputStream();
+
+                    //Toast.makeText(this,"step1!", Toast.LENGTH_SHORT);
+                } catch (UnknownHostException e1) {
+                    e1.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        thread.start();
+
+        Intent intent1 = new Intent(this, LoginActivity.class);
+        startActivity(intent1);
     }
 }
